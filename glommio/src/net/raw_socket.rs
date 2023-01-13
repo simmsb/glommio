@@ -45,6 +45,7 @@ impl FromRawFd for RawSocket {
 impl RawSocket {
     pub fn new(domain: Domain, ty: Type, proto: Option<Protocol>) -> Result<RawSocket> {
         let sk = Socket::new(domain, ty, proto)?;
+        sk.set_nonblocking(true)?;
         Ok(Self {
             socket: GlommioDatagram::from(sk),
         })
