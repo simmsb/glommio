@@ -55,7 +55,6 @@ impl RawSocket {
             .next()
             .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "empty address"))?;
         let sk = Socket::new(domain, ty, proto)?;
-        sk.set_nonblocking(true)?;
         let addr = socket2::SockAddr::from(addr);
         sk.bind(&addr)?;
         Ok(Self {
