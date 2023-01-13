@@ -43,14 +43,25 @@ impl FromRawFd for RawSocket {
 }
 
 impl RawSocket {
-    pub fn new(domain: Domain, ty: Type, proto: Option<Protocol>) -> Result<RawSocket> {
+    pub fn new<A: ToSocketAddrs>(
+        addr: A,
+        domain: Domain,
+        ty: Type,
+        proto: Option<Protocol>,
+    ) -> Result<RawSocket> {
+        let addr = addr
+            .to_socket_addrs()
+            .unwrap()
+            .next()
+            .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "empty address"))?;
         let sk = Socket::new(domain, ty, proto)?;
         sk.set_nonblocking(true)?;
+        let addr = socket2::SockAddr::from(addr);
+        sk.bind(&addr)?;
         Ok(Self {
             socket: GlommioDatagram::from(sk),
         })
     }
-
 
     /// Sets the buffer size used on the receive path
     pub fn set_buffer_size(&mut self, buffer_size: usize) {
